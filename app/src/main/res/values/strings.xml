@@ -18,4 +18,22 @@
     <!-- Content Descriptions -->
     <string name="cd_category_icon">Ícono de categoría</string>
     <string name="cd_commitment_card">Tarjeta de compromiso</string>
+    <string name="cd_add_commitment">Agregar nuevo compromiso</string>
+    <string name="cd_back_button">Botón de regreso</string>
+    
+    <!-- Add Commitment Screen -->
+    <string name="add_commitment_title">Nuevo Compromiso</string>
+    <string name="add_commitment_title_label">Título</string>
+    <string name="add_commitment_title_placeholder">Ingresa el título de tu compromiso</string>
+    <string name="add_commitment_description_label">Descripción</string>
+    <string name="add_commitment_description_placeholder">Describe los detalles de tu compromiso</string>
+    <string name="add_commitment_category_label">Categoría</string>
+    <string name="add_commitment_save_button">Guardar Compromiso</string>
+    <string name="add_commitment_category_placeholder">Selecciona una categoría</string>
+    
+    <!-- Detail Screen -->
+    <string name="detail_checklist_title">Seguimiento</string>
+    <string name="detail_progress_format">%1$d de %2$d completados</string>
+    <string name="detail_error_commitment_not_found">Compromiso no encontrado</string>
+    <string name="cd_checklist_item">Ítem de lista de verificación</string>
 </resources>

@@ -45,6 +45,53 @@ class HomeViewModel(
             }
         }
     }
+
+    /**
+     * Agrega un nuevo compromiso a la lista
+     */
+    fun addCommitment(commitment: Commitment) {
+        viewModelScope.launch {
+            try {
+                commitmentRepository.addCommitment(commitment)
+                // La UI se actualizará automáticamente a través del StateFlow
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message
+                )
+            }
+        }
+    }
+
+    /**
+     * Obtiene un compromiso por su ID
+     */
+    fun getCommitmentById(id: String): Commitment? {
+        return _uiState.value.commitments.find { it.id == id }
+    }
+
+    /**
+     * Actualiza el estado de un ítem del checklist
+     */
+    fun toggleChecklistItem(commitmentId: String, checklistItemId: String) {
+        viewModelScope.launch {
+            try {
+                val commitment = getCommitmentById(commitmentId)
+                val checklistItem = commitment?.checklist?.find { it.id == checklistItemId }
+                
+                if (commitment != null && checklistItem != null) {
+                    commitmentRepository.updateChecklistItem(
+                        commitmentId = commitmentId,
+                        checklistItemId = checklistItemId,
+                        isChecked = !checklistItem.isChecked
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message
+                )
+            }
+        }
+    }
 }
 
 /**

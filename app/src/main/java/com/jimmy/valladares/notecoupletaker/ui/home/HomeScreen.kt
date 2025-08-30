@@ -1,6 +1,7 @@
 package com.jimmy.valladares.notecoupletaker.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,10 +17,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -53,16 +59,37 @@ import java.time.LocalDateTime
  */
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(),
+    onAddCommitmentClick: () -> Unit = {},
+    onCommitmentClick: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val addCommitmentContentDescription = stringResource(R.string.cd_add_commitment)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
-    ) {
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddCommitmentClick,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.semantics { 
+                    contentDescription = addCommitmentContentDescription 
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = addCommitmentContentDescription
+                )
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
         // Header de la pantalla
         HomeHeader()
         
@@ -80,8 +107,12 @@ fun HomeScreen(
                 EmptyStateContent()
             }
             else -> {
-                CommitmentsList(commitments = uiState.commitments)
+                CommitmentsList(
+                    commitments = uiState.commitments,
+                    onCommitmentClick = onCommitmentClick
+                )
             }
+        }
         }
     }
 }
@@ -120,13 +151,19 @@ private fun HomeHeader() {
  * Lista de compromisos usando LazyColumn para optimización
  */
 @Composable
-private fun CommitmentsList(commitments: List<Commitment>) {
+private fun CommitmentsList(
+    commitments: List<Commitment>,
+    onCommitmentClick: (String) -> Unit
+) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(vertical = 8.dp)
     ) {
         items(commitments) { commitment ->
-            CommitmentCard(commitment = commitment)
+            CommitmentCard(
+                commitment = commitment,
+                onClick = { onCommitmentClick(commitment.id) }
+            )
         }
     }
 }
@@ -135,11 +172,15 @@ private fun CommitmentsList(commitments: List<Commitment>) {
  * Tarjeta individual para cada compromiso
  */
 @Composable
-private fun CommitmentCard(commitment: Commitment) {
+private fun CommitmentCard(
+    commitment: Commitment,
+    onClick: () -> Unit
+) {
     val categoryColor = getCategoryColor(commitment.category)
     val cardContentDescription = stringResource(R.string.cd_commitment_card)
     
     Card(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .semantics { contentDescription = cardContentDescription },
