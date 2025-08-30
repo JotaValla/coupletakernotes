@@ -46,6 +46,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jimmy.valladares.notecoupletaker.R
 import com.jimmy.valladares.notecoupletaker.domain.model.Commitment
 import com.jimmy.valladares.notecoupletaker.domain.model.CommitmentCategory
+import com.jimmy.valladares.notecoupletaker.domain.model.CommitmentWithChecklist
 import com.jimmy.valladares.notecoupletaker.ui.theme.CommunicationTint
 import com.jimmy.valladares.notecoupletaker.ui.theme.GoalsTint
 import com.jimmy.valladares.notecoupletaker.ui.theme.HabitsTint
@@ -61,7 +62,7 @@ import java.time.LocalDateTime
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     onAddCommitmentClick: () -> Unit = {},
-    onCommitmentClick: (String) -> Unit = {}
+    onCommitmentClick: (Int) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val addCommitmentContentDescription = stringResource(R.string.cd_add_commitment)
@@ -152,17 +153,17 @@ private fun HomeHeader() {
  */
 @Composable
 private fun CommitmentsList(
-    commitments: List<Commitment>,
-    onCommitmentClick: (String) -> Unit
+    commitments: List<CommitmentWithChecklist>,
+    onCommitmentClick: (Int) -> Unit
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(vertical = 8.dp)
     ) {
-        items(commitments) { commitment ->
+        items(commitments) { commitmentWithChecklist ->
             CommitmentCard(
-                commitment = commitment,
-                onClick = { onCommitmentClick(commitment.id) }
+                commitmentWithChecklist = commitmentWithChecklist,
+                onClick = { onCommitmentClick(commitmentWithChecklist.commitment.id) }
             )
         }
     }
@@ -173,9 +174,10 @@ private fun CommitmentsList(
  */
 @Composable
 private fun CommitmentCard(
-    commitment: Commitment,
+    commitmentWithChecklist: CommitmentWithChecklist,
     onClick: () -> Unit
 ) {
+    val commitment = commitmentWithChecklist.commitment
     val categoryColor = getCategoryColor(commitment.category)
     val cardContentDescription = stringResource(R.string.cd_commitment_card)
     

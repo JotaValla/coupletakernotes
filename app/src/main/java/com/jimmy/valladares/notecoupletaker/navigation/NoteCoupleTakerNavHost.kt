@@ -49,7 +49,8 @@ fun NoteCoupleTakerNavHost(
         }
         
         composable(NoteCoupleTakerDestinations.COMMITMENT_DETAIL_ROUTE_WITH_ARGS) { backStackEntry ->
-            val commitmentId = backStackEntry.arguments?.getString(NoteCoupleTakerDestinations.COMMITMENT_ID_ARG)
+            val commitmentIdString = backStackEntry.arguments?.getString(NoteCoupleTakerDestinations.COMMITMENT_ID_ARG)
+            val commitmentId = commitmentIdString?.toIntOrNull()
             
             if (commitmentId != null) {
                 CommitmentDetailScreen(

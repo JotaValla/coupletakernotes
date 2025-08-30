@@ -1,101 +1,93 @@
 package com.jimmy.valladares.notecoupletaker.data.repository
 
-import com.jimmy.valladares.notecoupletaker.domain.model.Commitment
-import com.jimmy.valladares.notecoupletaker.domain.model.CommitmentCategory
+import com.jimmy.valladares.notecoupletaker.data.database.CommitmentDao
 import com.jimmy.valladares.notecoupletaker.domain.model.ChecklistItem
-import com.jimmy.valladares.notecoupletaker.domain.model.generateDefaultChecklist
+import com.jimmy.valladares.notecoupletaker.domain.model.Commitment
+import com.jimmy.valladares.notecoupletaker.domain.model.CommitmentWithChecklist
+import com.jimmy.valladares.notecoupletaker.domain.model.generateDefaultChecklistItems
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import java.time.LocalDateTime
 
 /**
- * Repositorio que maneja los datos de compromisos
- * Por ahora contiene datos de ejemplo, en el futuro se conectará a una base de datos
+ * Repositorio que maneja los datos de compromisos usando Room como persistencia
  */
-class CommitmentRepository {
-
-    private val initialCommitments = listOf(
-        Commitment(
-            id = "1",
-            title = "Conversar 30 minutos diarios sin dispositivos",
-            description = "Dedicar media hora cada día para conversar sin teléfonos ni distracciones",
-            category = CommitmentCategory.COMMUNICATION,
-            creationDate = LocalDateTime.now().minusDays(5),
-            checklist = generateDefaultChecklist()
-        ),
-        Commitment(
-            id = "2", 
-            title = "Hacer ejercicio juntos 3 veces por semana",
-            description = "Realizar actividad física como pareja para mejorar nuestra salud",
-            category = CommitmentCategory.HABITS,
-            creationDate = LocalDateTime.now().minusDays(3),
-            checklist = generateDefaultChecklist()
-        ),
-        Commitment(
-            id = "3",
-            title = "Ahorrar para nuestro viaje de aniversario",
-            description = "Apartar $200 cada mes para el viaje especial de nuestro aniversario",
-            category = CommitmentCategory.GOALS,
-            creationDate = LocalDateTime.now().minusDays(1),
-            checklist = generateDefaultChecklist()
-        ),
-        Commitment(
-            id = "4",
-            title = "Cita nocturna semanal",
-            description = "Programar una cita especial cada viernes por la noche",
-            category = CommitmentCategory.QUALITY_TIME,
-            creationDate = LocalDateTime.now(),
-            checklist = generateDefaultChecklist()
-        )
-    )
-
-    // Lista mutable para mantener los compromisos en memoria
-    private val _commitments = MutableStateFlow(initialCommitments)
+class CommitmentRepository(
+    private val commitmentDao: CommitmentDao
+) {
 
     /**
-     * Obtiene todos los compromisos
+     * Obtiene todos los compromisos con sus checklists
      */
-    fun getAllCommitments(): Flow<List<Commitment>> {
-        return _commitments.asStateFlow()
+    fun getAllCommitmentsWithChecklist(): Flow<List<CommitmentWithChecklist>> {
+        return commitmentDao.getAllCommitmentsWithChecklist()
     }
 
     /**
-     * Agrega un nuevo compromiso a la lista
+     * Obtiene un compromiso específico por ID con su checklist
+     */
+    fun getCommitmentWithChecklistById(id: Int): Flow<CommitmentWithChecklist?> {
+        return commitmentDao.getCommitmentWithChecklistById(id)
+    }
+
+    /**
+     * Agrega un nuevo compromiso a la base de datos con su checklist por defecto
      */
     suspend fun addCommitment(commitment: Commitment) {
-        val currentList = _commitments.value.toMutableList()
-        currentList.add(commitment)
-        _commitments.value = currentList
+        // Insertar el compromiso y obtener su ID generado
+        val commitmentId = commitmentDao.insertCommitment(commitment)
+        
+        // Generar y insertar los ítems del checklist por defecto
+        val checklistItems = generateDefaultChecklistItems(commitmentId.toInt())
+        commitmentDao.insertChecklistItems(checklistItems)
     }
 
     /**
-     * Obtiene un compromiso por su ID
+     * Actualiza un compromiso existente
      */
-    fun getCommitmentById(id: String): Commitment? {
-        return _commitments.value.find { it.id == id }
+    suspend fun updateCommitment(commitment: Commitment) {
+        commitmentDao.updateCommitment(commitment)
     }
 
     /**
      * Actualiza el estado de un ítem del checklist
      */
-    suspend fun updateChecklistItem(commitmentId: String, checklistItemId: String, isChecked: Boolean) {
-        val currentList = _commitments.value.toMutableList()
-        val commitmentIndex = currentList.indexOfFirst { it.id == commitmentId }
-        
-        if (commitmentIndex != -1) {
-            val commitment = currentList[commitmentIndex]
-            val updatedChecklist = commitment.checklist.map { item ->
-                if (item.id == checklistItemId) {
-                    item.copy(isChecked = isChecked)
-                } else {
-                    item
-                }
-            }
+    suspend fun updateChecklistItem(commitmentId: Int, checklistItemId: Int, isChecked: Boolean) {
+        // Primero obtenemos el ítem actual
+        val commitment = commitmentDao.getCommitmentById(commitmentId)
+        if (commitment != null) {
+            // Obtener todos los ítems del checklist para este compromiso
+            val checklistItems = commitmentDao.getChecklistItemsByCommitmentId(commitmentId)
             
-            val updatedCommitment = commitment.copy(checklist = updatedChecklist)
-            currentList[commitmentIndex] = updatedCommitment
-            _commitments.value = currentList
+            // Como necesitamos el ítem específico, creamos uno nuevo con los datos actualizados
+            val updatedItem = ChecklistItem(
+                id = checklistItemId,
+                commitmentId = commitmentId,
+                text = "", // Se mantendrá el valor actual en la base de datos
+                isChecked = isChecked
+            )
+            
+            // Actualizamos solo el estado isChecked
+            commitmentDao.updateChecklistItem(updatedItem)
         }
+    }
+
+    /**
+     * Actualiza un ítem completo del checklist
+     */
+    suspend fun updateChecklistItem(item: ChecklistItem) {
+        commitmentDao.updateChecklistItem(item)
+    }
+
+    /**
+     * Elimina un compromiso
+     */
+    suspend fun deleteCommitment(id: Int) {
+        commitmentDao.deleteCommitment(id)
+    }
+
+    /**
+     * Obtiene un compromiso por ID (sin checklist)
+     */
+    suspend fun getCommitmentById(id: Int): Commitment? {
+        return commitmentDao.getCommitmentById(id)
     }
 }

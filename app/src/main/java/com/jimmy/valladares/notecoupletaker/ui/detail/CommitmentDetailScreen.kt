@@ -65,19 +65,21 @@ import com.jimmy.valladares.notecoupletaker.ui.theme.QualityTimeTint
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommitmentDetailScreen(
-    commitmentId: String,
+    commitmentId: Int,
     viewModel: HomeViewModel,
     onNavigateBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val commitment = uiState.commitments.find { it.id == commitmentId }
+    val commitmentWithChecklist = uiState.commitments.find { it.commitment.id == commitmentId }
     val backButtonContentDescription = stringResource(R.string.cd_back_button)
 
-    if (commitment == null) {
+    if (commitmentWithChecklist == null) {
         // Mostrar pantalla de error si no se encuentra el compromiso
         ErrorScreen(onNavigateBack = onNavigateBack)
         return
     }
+
+    val commitment = commitmentWithChecklist.commitment
 
     Scaffold(
         topBar = {
@@ -126,7 +128,7 @@ fun CommitmentDetailScreen(
             
             item {
                 // Progreso del checklist
-                ChecklistProgressCard(commitment = commitment)
+                ChecklistProgressCard(checklist = commitmentWithChecklist.checklist)
             }
             
             item {
@@ -142,7 +144,7 @@ fun CommitmentDetailScreen(
             }
             
             // Items del checklist
-            items(commitment.checklist) { checklistItem ->
+            items(commitmentWithChecklist.checklist) { checklistItem ->
                 ChecklistItemCard(
                     item = checklistItem,
                     onCheckedChange = { isChecked ->
@@ -229,9 +231,9 @@ private fun CommitmentInfoCard(commitment: Commitment) {
  * Tarjeta que muestra el progreso del checklist
  */
 @Composable
-private fun ChecklistProgressCard(commitment: Commitment) {
-    val completedItems = commitment.checklist.count { it.isChecked }
-    val totalItems = commitment.checklist.size
+private fun ChecklistProgressCard(checklist: List<ChecklistItem>) {
+    val completedItems = checklist.count { it.isChecked }
+    val totalItems = checklist.size
     val progress = if (totalItems > 0) completedItems.toFloat() / totalItems else 0f
     
     // Animación del progreso
