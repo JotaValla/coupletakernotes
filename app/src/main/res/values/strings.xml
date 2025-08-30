@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">NoteCoupleTaker</string>
+    
+    <!-- Home Screen -->
+    <string name="home_title">Nuestros Compromisos</string>
+    <string name="home_subtitle">Juntos hacia nuestras metas</string>
+    <string name="home_empty_state">Aún no hay compromisos registrados</string>
+    <string name="home_loading">Cargando compromisos...</string>
+    <string name="home_error_message">Error al cargar los compromisos</string>
+    
+    <!-- Commitment Categories -->
+    <string name="category_communication">Comunicación</string>
+    <string name="category_habits">Hábitos</string>
+    <string name="category_goals">Metas</string>
+    <string name="category_quality_time">Tiempo de Calidad</string>
+    <string name="category_personal_growth">Crecimiento Personal</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_category_icon">Ícono de categoría</string>
+    <string name="cd_commitment_card">Tarjeta de compromiso</string>
 </resources>

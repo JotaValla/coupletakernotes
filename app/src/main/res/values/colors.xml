@@ -7,4 +7,21 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Paleta principal - tonos cálidos y suaves -->
+    <color name="warm_cream">#FFF8F5</color>
+    <color name="soft_peach">#FFEEE6</color>
+    <color name="gentle_coral">#FFD4C8</color>
+    <color name="warm_rose">#F8BBD9</color>
+    <color name="dusty_lavender">#E8C5E5</color>
+    <color name="sage_green">#D4E6D4</color>
+    <color name="warm_gray">#8E8E93</color>
+    <color name="charcoal">#2C2C2E</color>
+    
+    <!-- Colores para categorías -->
+    <color name="communication_tint">#E3F2FD</color>
+    <color name="habits_tint">#F3E5F5</color>
+    <color name="goals_tint">#E8F5E8</color>
+    <color name="quality_time_tint">#FCE4EC</color>
+    <color name="personal_growth_tint">#FFF3E0</color>
 </resources>
