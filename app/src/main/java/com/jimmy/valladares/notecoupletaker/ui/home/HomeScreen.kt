@@ -1,5 +1,6 @@
 package com.jimmy.valladares.notecoupletaker.ui.home
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,17 +20,31 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,11 +68,13 @@ import com.jimmy.valladares.notecoupletaker.ui.theme.HabitsTint
 import com.jimmy.valladares.notecoupletaker.ui.theme.NoteCoupleTakerTheme
 import com.jimmy.valladares.notecoupletaker.ui.theme.PersonalGrowthTint
 import com.jimmy.valladares.notecoupletaker.ui.theme.QualityTimeTint
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 /**
  * Pantalla principal que muestra la lista de compromisos de la pareja
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
@@ -66,8 +83,16 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val addCommitmentContentDescription = stringResource(R.string.cd_add_commitment)
+    val deleteSuccessMessage = stringResource(R.string.delete_success_message)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    
+    // Estado para el diálogo de confirmación
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var commitmentToDelete by remember { mutableStateOf<CommitmentWithChecklist?>(null) }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddCommitmentClick,
@@ -91,29 +116,56 @@ fun HomeScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-        // Header de la pantalla
-        HomeHeader()
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // Contenido basado en el estado
-        when {
-            uiState.isLoading -> {
-                LoadingContent()
-            }
-            uiState.error != null -> {
-                ErrorContent(error = uiState.error!!)
-            }
-            uiState.commitments.isEmpty() -> {
-                EmptyStateContent()
-            }
-            else -> {
-                CommitmentsList(
-                    commitments = uiState.commitments,
-                    onCommitmentClick = onCommitmentClick
-                )
+            // Header de la pantalla
+            HomeHeader()
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            // Contenido basado en el estado
+            when {
+                uiState.isLoading -> {
+                    LoadingContent()
+                }
+                uiState.error != null -> {
+                    ErrorContent(error = uiState.error!!)
+                }
+                uiState.commitments.isEmpty() -> {
+                    EmptyStateContent()
+                }
+                else -> {
+                    CommitmentsList(
+                        commitments = uiState.commitments,
+                        onCommitmentClick = onCommitmentClick,
+                        onDeleteRequest = { commitment ->
+                            commitmentToDelete = commitment
+                            showDeleteDialog = true
+                        }
+                    )
+                }
             }
         }
+        
+        // Diálogo de confirmación de eliminación
+        if (showDeleteDialog && commitmentToDelete != null) {
+            DeleteConfirmationDialog(
+                commitmentTitle = commitmentToDelete!!.commitment.title,
+                onConfirm = {
+                    viewModel.deleteCommitment(commitmentToDelete!!.commitment.id)
+                    showDeleteDialog = false
+                    commitmentToDelete = null
+                    
+                    // Mostrar snackbar de confirmación
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = deleteSuccessMessage
+                        )
+                    }
+                },
+                onDismiss = {
+                    showDeleteDialog = false
+                    commitmentToDelete = null
+                }
+            )
         }
     }
 }
@@ -151,22 +203,159 @@ private fun HomeHeader() {
 /**
  * Lista de compromisos usando LazyColumn para optimización
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CommitmentsList(
     commitments: List<CommitmentWithChecklist>,
-    onCommitmentClick: (Int) -> Unit
+    onCommitmentClick: (Int) -> Unit,
+    onDeleteRequest: (CommitmentWithChecklist) -> Unit
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(vertical = 8.dp)
     ) {
-        items(commitments) { commitmentWithChecklist ->
-            CommitmentCard(
+        items(
+            items = commitments,
+            key = { it.commitment.id }
+        ) { commitmentWithChecklist ->
+            SwipeToDeleteItem(
                 commitmentWithChecklist = commitmentWithChecklist,
-                onClick = { onCommitmentClick(commitmentWithChecklist.commitment.id) }
+                onCommitmentClick = { onCommitmentClick(commitmentWithChecklist.commitment.id) },
+                onDeleteRequest = { onDeleteRequest(commitmentWithChecklist) }
             )
         }
     }
+}
+
+/**
+ * Item con funcionalidad de swipe to delete
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeToDeleteItem(
+    commitmentWithChecklist: CommitmentWithChecklist,
+    onCommitmentClick: () -> Unit,
+    onDeleteRequest: () -> Unit
+) {
+    val swipeState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            when (value) {
+                SwipeToDismissBoxValue.StartToEnd, SwipeToDismissBoxValue.EndToStart -> {
+                    onDeleteRequest()
+                    false // No eliminamos inmediatamente, esperamos confirmación
+                }
+                SwipeToDismissBoxValue.Settled -> false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = swipeState,
+        backgroundContent = {
+            DeleteBackground(swipeState.targetValue)
+        },
+        content = {
+            CommitmentCard(
+                commitmentWithChecklist = commitmentWithChecklist,
+                onClick = onCommitmentClick
+            )
+        }
+    )
+}
+
+/**
+ * Fondo que se muestra durante el swipe para indicar eliminación
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DeleteBackground(dismissValue: SwipeToDismissBoxValue) {
+    val color by animateColorAsState(
+        when (dismissValue) {
+            SwipeToDismissBoxValue.StartToEnd, SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
+            SwipeToDismissBoxValue.Settled -> MaterialTheme.colorScheme.surface
+        },
+        label = "delete_background_color"
+    )
+    
+    val deleteBackgroundContentDescription = stringResource(R.string.cd_delete_background)
+    val deleteIconContentDescription = stringResource(R.string.cd_delete_icon)
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color)
+            .padding(horizontal = 20.dp)
+            .semantics { contentDescription = deleteBackgroundContentDescription },
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        Icon(
+            imageVector = Icons.Default.Delete,
+            contentDescription = deleteIconContentDescription,
+            tint = Color.White,
+            modifier = Modifier.size(32.dp)
+        )
+    }
+}
+
+/**
+ * Diálogo de confirmación para eliminar compromiso
+ */
+@Composable
+private fun DeleteConfirmationDialog(
+    commitmentTitle: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.delete_dialog_title),
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold
+                )
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = stringResource(R.string.delete_dialog_message),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "\"$commitmentTitle\"",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm
+            ) {
+                Text(
+                    text = stringResource(R.string.delete_dialog_confirm),
+                    color = MaterialTheme.colorScheme.error,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss
+            ) {
+                Text(
+                    text = stringResource(R.string.delete_dialog_cancel),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp)
+    )
 }
 
 /**

@@ -95,6 +95,22 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    /**
+     * Elimina un compromiso de la base de datos
+     */
+    fun deleteCommitment(commitmentId: Int) {
+        viewModelScope.launch {
+            try {
+                commitmentRepository.deleteCommitment(commitmentId)
+                // La UI se actualizará automáticamente a través del Flow de la base de datos
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message
+                )
+            }
+        }
+    }
 }
 
 /**

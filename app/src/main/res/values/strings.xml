@@ -36,4 +36,13 @@
     <string name="detail_progress_format">%1$d de %2$d completados</string>
     <string name="detail_error_commitment_not_found">Compromiso no encontrado</string>
     <string name="cd_checklist_item">Ítem de lista de verificación</string>
+    
+    <!-- Delete Confirmation Dialog -->
+    <string name="delete_dialog_title">Eliminar Compromiso</string>
+    <string name="delete_dialog_message">¿Estás seguro de que deseas eliminar este compromiso? Esta acción no se puede deshacer.</string>
+    <string name="delete_dialog_confirm">Confirmar</string>
+    <string name="delete_dialog_cancel">Cancelar</string>
+    <string name="delete_success_message">Compromiso eliminado</string>
+    <string name="cd_delete_background">Fondo de eliminación</string>
+    <string name="cd_delete_icon">Ícono de eliminar</string>
 </resources>
