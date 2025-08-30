@@ -37,6 +37,7 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -63,6 +64,11 @@ import com.jimmy.valladares.notecoupletaker.domain.model.Commitment
 import com.jimmy.valladares.notecoupletaker.domain.model.CommitmentCategory
 import com.jimmy.valladares.notecoupletaker.domain.model.CommitmentWithChecklist
 import com.jimmy.valladares.notecoupletaker.ui.theme.CommunicationTint
+import com.jimmy.valladares.notecoupletaker.ui.theme.DarkCommunicationTint
+import com.jimmy.valladares.notecoupletaker.ui.theme.DarkGoalsTint
+import com.jimmy.valladares.notecoupletaker.ui.theme.DarkHabitsTint
+import com.jimmy.valladares.notecoupletaker.ui.theme.DarkPersonalGrowthTint
+import com.jimmy.valladares.notecoupletaker.ui.theme.DarkQualityTimeTint
 import com.jimmy.valladares.notecoupletaker.ui.theme.GoalsTint
 import com.jimmy.valladares.notecoupletaker.ui.theme.HabitsTint
 import com.jimmy.valladares.notecoupletaker.ui.theme.NoteCoupleTakerTheme
@@ -529,12 +535,13 @@ private fun ErrorContent(error: String) {
  */
 @Composable
 private fun getCategoryColor(category: CommitmentCategory): Color {
+    val isDarkTheme = isSystemInDarkTheme()
     return when (category) {
-        CommitmentCategory.COMMUNICATION -> CommunicationTint
-        CommitmentCategory.HABITS -> HabitsTint
-        CommitmentCategory.GOALS -> GoalsTint
-        CommitmentCategory.QUALITY_TIME -> QualityTimeTint
-        CommitmentCategory.PERSONAL_GROWTH -> PersonalGrowthTint
+        CommitmentCategory.COMMUNICATION -> if (isDarkTheme) DarkCommunicationTint else CommunicationTint
+        CommitmentCategory.HABITS -> if (isDarkTheme) DarkHabitsTint else HabitsTint
+        CommitmentCategory.GOALS -> if (isDarkTheme) DarkGoalsTint else GoalsTint
+        CommitmentCategory.QUALITY_TIME -> if (isDarkTheme) DarkQualityTimeTint else QualityTimeTint
+        CommitmentCategory.PERSONAL_GROWTH -> if (isDarkTheme) DarkPersonalGrowthTint else PersonalGrowthTint
     }
 }
 

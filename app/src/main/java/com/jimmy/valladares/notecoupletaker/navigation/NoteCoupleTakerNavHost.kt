@@ -55,7 +55,6 @@ fun NoteCoupleTakerNavHost(
             if (commitmentId != null) {
                 CommitmentDetailScreen(
                     commitmentId = commitmentId,
-                    viewModel = homeViewModel,
                     onNavigateBack = {
                         navController.popBackStack()
                     }

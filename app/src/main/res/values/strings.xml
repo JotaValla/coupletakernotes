@@ -35,7 +35,10 @@
     <string name="detail_checklist_title">Seguimiento</string>
     <string name="detail_progress_format">%1$d de %2$d completados</string>
     <string name="detail_error_commitment_not_found">Compromiso no encontrado</string>
+    <string name="detail_created_on">Creado el:</string>
+    <string name="detail_progress_title">Progreso</string>
     <string name="cd_checklist_item">Ítem de lista de verificación</string>
+    <string name="cd_progress_bar">Barra de progreso</string>
     
     <!-- Delete Confirmation Dialog -->
     <string name="delete_dialog_title">Eliminar Compromiso</string>
