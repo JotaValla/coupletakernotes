@@ -262,6 +262,16 @@ private fun NotificationPermissionCard(
                         Text(stringResource(R.string.view_notification_history))
                     }
                 }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Botón de diagnóstico
+                OutlinedButton(
+                    onClick = { /* TODO: Navigate to diagnostics */ },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("🔧 Diagnóstico del Sistema")
+                }
             } else {
                 Button(
                     onClick = onOpenSettings,

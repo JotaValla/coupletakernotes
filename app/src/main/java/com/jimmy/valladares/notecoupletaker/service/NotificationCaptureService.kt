@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 /**
  * Servicio que escucha y captura todas las notificaciones que llegan al dispositivo.
@@ -42,7 +43,19 @@ class NotificationCaptureService : NotificationListenerService() {
     override fun onListenerConnected() {
         super.onListenerConnected()
         Log.d(TAG, "✅ NotificationCaptureService conectado exitosamente")
-        Log.d(TAG, "El servicio está listo para capturar notificaciones y guardarlas en Firestore")
+        Log.d(TAG, "🔥 Firebase inicializado: ${com.google.firebase.FirebaseApp.getInstance() != null}")
+        Log.d(TAG, "📡 El servicio está listo para capturar notificaciones y guardarlas en Firestore")
+        
+        // Test de conectividad con Firestore
+        serviceScope.launch {
+            try {
+                val testDoc = mapOf("test" to "connection", "timestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp())
+                notificationRepository.firestore.collection("connection_test").add(testDoc).await()
+                Log.d(TAG, "🎯 Test de conexión a Firestore: EXITOSO")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Test de conexión a Firestore: FALLIDO", e)
+            }
+        }
     }
 
     /**
@@ -99,8 +112,10 @@ class NotificationCaptureService : NotificationListenerService() {
                 packageName = packageName,
                 title = title,
                 text = finalText
-                // timestamp se establece automáticamente con FieldValue.serverTimestamp()
+                // timestamp se establece automáticamente con @ServerTimestamp
             )
+            
+            Log.d(TAG, "🚀 Iniciando guardado en Firestore...")
             
             // Guardar en Firestore de forma asíncrona
             serviceScope.launch {
@@ -109,6 +124,7 @@ class NotificationCaptureService : NotificationListenerService() {
                     Log.d(TAG, "💾 Notificación guardada en Firestore: $packageName")
                 } catch (e: Exception) {
                     Log.e(TAG, "❌ Error al guardar notificación en Firestore", e)
+                    Log.e(TAG, "🔍 Package: $packageName, Title: $title")
                 }
             }
             

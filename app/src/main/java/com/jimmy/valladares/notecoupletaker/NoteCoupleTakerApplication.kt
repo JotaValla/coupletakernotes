@@ -1,6 +1,7 @@
 package com.jimmy.valladares.notecoupletaker
 
 import android.app.Application
+import com.google.firebase.FirebaseApp
 import com.jimmy.valladares.notecoupletaker.di.AppContainer
 
 /**
@@ -15,6 +16,10 @@ class NoteCoupleTakerApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        
+        // Inicializar Firebase
+        FirebaseApp.initializeApp(this)
+        
         appContainer = AppContainer(this)
     }
 }

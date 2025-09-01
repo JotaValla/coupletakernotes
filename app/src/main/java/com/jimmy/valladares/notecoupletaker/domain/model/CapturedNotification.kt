@@ -1,6 +1,8 @@
 package com.jimmy.valladares.notecoupletaker.domain.model
 
-import com.google.firebase.firestore.FieldValue
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.ServerTimestamp
+import java.util.Date
 
 /**
  * Modelo de datos para representar una notificación capturada que se guarda en Firestore.
@@ -9,6 +11,11 @@ import com.google.firebase.firestore.FieldValue
  * cada vez que el dispositivo recibe una nueva notificación.
  */
 data class CapturedNotification(
+    /**
+     * El ID único del documento en Firestore
+     */
+    val id: String = "",
+    
     /**
      * El nombre del paquete de la aplicación que envió la notificación
      */
@@ -26,7 +33,8 @@ data class CapturedNotification(
     
     /**
      * Timestamp del servidor de cuando se recibió la notificación
-     * Se utiliza FieldValue.serverTimestamp() para obtener el tiempo del servidor de Firebase
+     * Se utiliza @ServerTimestamp para obtener el tiempo del servidor de Firebase automáticamente
      */
-    val timestamp: Any = FieldValue.serverTimestamp()
+    @ServerTimestamp
+    val timestamp: Timestamp? = null
 )

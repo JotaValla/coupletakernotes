@@ -22,7 +22,7 @@ class NotificationRepository {
         private const val NOTIFICATIONS_COLLECTION = "notifications"
     }
     
-    private val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseFirestore.getInstance()
     
     /**
      * Guarda una notificación capturada en Firestore.
@@ -31,17 +31,33 @@ class NotificationRepository {
      */
     suspend fun saveNotification(notification: CapturedNotification) {
         try {
-            Log.d(TAG, "Guardando notificación en Firestore: ${notification.packageName}")
+            Log.d(TAG, "🔄 Iniciando guardado en Firestore...")
+            Log.d(TAG, "📦 Package: ${notification.packageName}")
+            Log.d(TAG, "📋 Title: ${notification.title}")
+            Log.d(TAG, "📝 Text: ${notification.text}")
+            
+            // Crear un mapa con los datos para mejor debugging
+            val notificationData = mapOf(
+                "packageName" to notification.packageName,
+                "title" to notification.title,
+                "text" to notification.text,
+                "timestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp()
+            )
+            
+            Log.d(TAG, "📊 Datos a guardar: $notificationData")
             
             // Añadir el documento a la colección "notifications"
-            firestore.collection(NOTIFICATIONS_COLLECTION)
-                .add(notification)
+            val documentRef = firestore.collection(NOTIFICATIONS_COLLECTION)
+                .add(notificationData)
                 .await()
             
-            Log.d(TAG, "Notificación guardada exitosamente en Firestore")
+            Log.d(TAG, "✅ Notificación guardada exitosamente en Firestore con ID: ${documentRef.id}")
+            Log.d(TAG, "🔗 URL: https://console.firebase.google.com/project/${firestore.app.options.projectId}/firestore/data")
             
         } catch (e: Exception) {
-            Log.e(TAG, "Error al guardar la notificación en Firestore", e)
+            Log.e(TAG, "❌ Error al guardar la notificación en Firestore", e)
+            Log.e(TAG, "🔍 Detalles del error: ${e.message}")
+            Log.e(TAG, "📊 Notification data: packageName=${notification.packageName}, title=${notification.title}")
             // En un entorno de producción, podrías enviar este error a un servicio de analytics
             // como Firebase Crashlytics para monitorear errores
         }
@@ -63,7 +79,7 @@ class NotificationRepository {
             
             val notifications = result.documents.mapNotNull { document ->
                 try {
-                    document.toObject(CapturedNotification::class.java)
+                    document.toObject(CapturedNotification::class.java)?.copy(id = document.id)
                 } catch (e: Exception) {
                     Log.w(TAG, "Error al convertir documento a CapturedNotification: ${document.id}", e)
                     null
@@ -99,7 +115,7 @@ class NotificationRepository {
                 
                 val notifications = snapshot?.documents?.mapNotNull { document ->
                     try {
-                        document.toObject(CapturedNotification::class.java)
+                        document.toObject(CapturedNotification::class.java)?.copy(id = document.id)
                     } catch (e: Exception) {
                         Log.w(TAG, "Error al convertir documento en tiempo real: ${document.id}", e)
                         null

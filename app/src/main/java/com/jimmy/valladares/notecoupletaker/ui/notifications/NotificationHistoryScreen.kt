@@ -160,7 +160,10 @@ private fun NotificationsList(
         
         items(
             items = notifications,
-            key = { "${it.packageName}_${it.timestamp}" }
+            key = { notification ->
+                // Usar el ID de Firestore como clave única y estable
+                notification.id
+            }
         ) { notification ->
             NotificationCard(notification = notification)
         }
