@@ -90,4 +90,18 @@ class CommitmentRepository(
     suspend fun getCommitmentById(id: Int): Commitment? {
         return commitmentDao.getCommitmentById(id)
     }
+
+    /**
+     * Obtiene todos los compromisos (sin checklist)
+     */
+    fun getAllCommitments(): Flow<List<Commitment>> {
+        return commitmentDao.getAllCommitments()
+    }
+
+    /**
+     * Actualiza solo el tiempo de recordatorio de un compromiso
+     */
+    suspend fun updateReminderTime(commitmentId: Int, reminderTime: String?) {
+        commitmentDao.updateReminderTime(commitmentId, reminderTime)
+    }
 }

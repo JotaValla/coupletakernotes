@@ -48,4 +48,26 @@
     <string name="delete_success_message">Compromiso eliminado</string>
     <string name="cd_delete_background">Fondo de eliminación</string>
     <string name="cd_delete_icon">Ícono de eliminar</string>
+    
+    <!-- Reminder functionality -->
+    <string name="reminder_add">Añadir Recordatorio</string>
+    <string name="reminder_edit">Editar Recordatorio</string>
+    <string name="reminder_cancel">Cancelar Recordatorio</string>
+    <string name="reminder_set_time">Establecer Hora</string>
+    <string name="reminder_time_set">Recordatorio configurado para las %s</string>
+    <string name="reminder_cancelled">Recordatorio cancelado</string>
+    <string name="reminder_dialog_title">Recordatorio</string>
+    <string name="reminder_dialog_message">¿Qué deseas hacer con el recordatorio?</string>
+    <string name="reminder_dialog_edit">Cambiar Hora</string>
+    <string name="reminder_dialog_remove">Quitar Recordatorio</string>
+    <string name="reminder_permission_required_title">Permisos requeridos</string>
+    <string name="reminder_permission_required_message">Para configurar recordatorios, necesitas permitir notificaciones en la configuración de la aplicación.</string>
+    <string name="reminder_permission_go_to_settings">Ir a Configuración</string>
+    <string name="reminder_permission_cancel">Cancelar</string>
+    <string name="cd_reminder_button">Botón de recordatorio</string>
+    
+    <!-- Notifications -->
+    <string name="notification_title">Recordatorio de tu compromiso</string>
+    <string name="notification_channel_name">Recordatorios de Compromisos</string>
+    <string name="notification_channel_description">Notificaciones para recordar compromisos de pareja</string>
 </resources>

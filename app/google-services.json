@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "280055685034",
+    "project_id": "notecoupletak3r",
+    "storage_bucket": "notecoupletak3r.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:280055685034:android:a3b3094fac81df781e15d3",
+        "android_client_info": {
+          "package_name": "com.jimmy.valladares.notecoupletaker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8OLxP5EYHzyTfPzZPC3Y4O4TIuLsT0iw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

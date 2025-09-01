@@ -1,5 +1,12 @@
 package com.jimmy.valladares.notecoupletaker.ui.detail
 
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -20,6 +27,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -31,17 +41,29 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -50,6 +72,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jimmy.valladares.notecoupletaker.R
 import com.jimmy.valladares.notecoupletaker.domain.model.ChecklistItem
@@ -69,6 +93,7 @@ import com.jimmy.valladares.notecoupletaker.ui.theme.PersonalGrowthTint
 import com.jimmy.valladares.notecoupletaker.ui.theme.ProgressGreen
 import com.jimmy.valladares.notecoupletaker.ui.theme.ProgressGreenDark
 import com.jimmy.valladares.notecoupletaker.ui.theme.QualityTimeTint
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -85,6 +110,29 @@ fun CommitmentDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val backButtonContentDescription = stringResource(R.string.cd_back_button)
+    val reminderButtonContentDescription = stringResource(R.string.cd_reminder_button)
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    // Estados para los diálogos
+    var showTimePickerDialog by remember { mutableStateOf(false) }
+    var showReminderDialog by remember { mutableStateOf(false) }
+    var showPermissionDialog by remember { mutableStateOf(false) }
+    
+    // TimePicker state
+    val timePickerState = rememberTimePickerState()
+    
+    // Launcher para solicitar permisos de notificación
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            showTimePickerDialog = true
+        } else {
+            showPermissionDialog = true
+        }
+    }
 
     // Cargar el compromiso cuando se abre la pantalla
     LaunchedEffect(commitmentId) {
@@ -92,6 +140,7 @@ fun CommitmentDetailScreen(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -114,6 +163,56 @@ fun CommitmentDetailScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = backButtonContentDescription
                         )
+                    }
+                },
+                actions = {
+                    // Botón de recordatorio
+                    if (uiState.commitmentWithChecklist != null) {
+                        val hasReminder = uiState.commitmentWithChecklist!!.commitment.reminderTime != null
+                        
+                        // Botón de prueba de notificación (temporal para debugging)
+                        IconButton(
+                            onClick = {
+                                viewModel.testNotification(commitmentId)
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Probando notificación en 10 segundos...")
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = "Probar notificación",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        
+                        IconButton(
+                            onClick = {
+                                if (hasReminder) {
+                                    showReminderDialog = true
+                                } else {
+                                    // Verificar permisos antes de mostrar el time picker
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                        if (viewModel.hasNotificationPermission()) {
+                                            showTimePickerDialog = true
+                                        } else {
+                                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                        }
+                                    } else {
+                                        showTimePickerDialog = true
+                                    }
+                                }
+                            },
+                            modifier = Modifier.semantics {
+                                contentDescription = reminderButtonContentDescription
+                            }
+                        ) {
+                            Icon(
+                                imageVector = if (hasReminder) Icons.Default.Notifications else Icons.Default.Notifications,
+                                contentDescription = reminderButtonContentDescription,
+                                tint = if (hasReminder) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -145,6 +244,61 @@ fun CommitmentDetailScreen(
                 )
             }
         }
+    }
+    
+    // Time Picker Dialog
+    if (showTimePickerDialog) {
+        TimePickerDialog(
+            onConfirm = { time ->
+                val timeString = String.format("%02d:%02d", time.hour, time.minute)
+                viewModel.setReminder(commitmentId, timeString)
+                showTimePickerDialog = false
+                
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        context.getString(R.string.reminder_time_set, timeString)
+                    )
+                }
+            },
+            onDismiss = { showTimePickerDialog = false },
+            timePickerState = timePickerState
+        )
+    }
+    
+    // Reminder Options Dialog
+    if (showReminderDialog) {
+        ReminderOptionsDialog(
+            currentReminder = uiState.commitmentWithChecklist?.commitment?.reminderTime,
+            onEditTime = {
+                showReminderDialog = false
+                showTimePickerDialog = true
+            },
+            onRemoveReminder = {
+                viewModel.cancelReminder(commitmentId)
+                showReminderDialog = false
+                
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        context.getString(R.string.reminder_cancelled)
+                    )
+                }
+            },
+            onDismiss = { showReminderDialog = false }
+        )
+    }
+    
+    // Permission Dialog
+    if (showPermissionDialog) {
+        PermissionDialog(
+            onGoToSettings = {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
+                }
+                context.startActivity(intent)
+                showPermissionDialog = false
+            },
+            onDismiss = { showPermissionDialog = false }
+        )
     }
 }
 /**
@@ -557,4 +711,146 @@ private fun CommitmentDetailScreenPreview() {
             Text("Preview no disponible - requiere ViewModel")
         }
     }
+}
+
+/**
+ * Diálogo para seleccionar la hora del recordatorio
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimePickerDialog(
+    onConfirm: (TimePickerState) -> Unit,
+    onDismiss: () -> Unit,
+    timePickerState: TimePickerState
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(R.string.reminder_set_time),
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialColor = MaterialTheme.colorScheme.surfaceVariant,
+                        selectorColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(R.string.delete_dialog_cancel))
+                    }
+                    
+                    TextButton(
+                        onClick = { onConfirm(timePickerState) },
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Text(stringResource(R.string.delete_dialog_confirm))
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Diálogo con opciones para gestionar el recordatorio existente
+ */
+@Composable
+private fun ReminderOptionsDialog(
+    currentReminder: String?,
+    onEditTime: () -> Unit,
+    onRemoveReminder: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(stringResource(R.string.reminder_dialog_title))
+        },
+        text = {
+            Column {
+                Text(stringResource(R.string.reminder_dialog_message))
+                if (currentReminder != null) {
+                    Text(
+                        text = "Hora actual: $currentReminder",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium
+                        ),
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Row {
+                TextButton(onClick = onEditTime) {
+                    Text(stringResource(R.string.reminder_dialog_edit))
+                }
+                TextButton(
+                    onClick = onRemoveReminder,
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Text(stringResource(R.string.reminder_dialog_remove))
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.delete_dialog_cancel))
+            }
+        }
+    )
+}
+
+/**
+ * Diálogo para solicitar permisos de notificación
+ */
+@Composable
+private fun PermissionDialog(
+    onGoToSettings: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(stringResource(R.string.reminder_permission_required_title))
+        },
+        text = {
+            Text(stringResource(R.string.reminder_permission_required_message))
+        },
+        confirmButton = {
+            TextButton(onClick = onGoToSettings) {
+                Text(stringResource(R.string.reminder_permission_go_to_settings))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.reminder_permission_cancel))
+            }
+        }
+    )
 }

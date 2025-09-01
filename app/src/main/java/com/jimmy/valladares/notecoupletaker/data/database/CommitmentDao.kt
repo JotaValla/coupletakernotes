@@ -84,4 +84,10 @@ interface CommitmentDao {
      */
     @Query("DELETE FROM commitments")
     suspend fun deleteAllCommitments()
+
+    /**
+     * Actualiza solo el tiempo de recordatorio de un compromiso
+     */
+    @Query("UPDATE commitments SET reminderTime = :reminderTime WHERE id = :commitmentId")
+    suspend fun updateReminderTime(commitmentId: Int, reminderTime: String?)
 }

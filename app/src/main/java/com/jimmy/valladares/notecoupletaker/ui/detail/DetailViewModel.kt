@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.jimmy.valladares.notecoupletaker.NoteCoupleTakerApplication
 import com.jimmy.valladares.notecoupletaker.data.repository.CommitmentRepository
 import com.jimmy.valladares.notecoupletaker.domain.model.CommitmentWithChecklist
+import com.jimmy.valladares.notecoupletaker.utils.NotificationScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +21,8 @@ class DetailViewModel(application: Application) : AndroidViewModel(application) 
 
     private val commitmentRepository: CommitmentRepository = 
         (application as NoteCoupleTakerApplication).appContainer.commitmentRepository
+        
+    private val notificationScheduler = NotificationScheduler(application)
 
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
@@ -90,6 +93,81 @@ class DetailViewModel(application: Application) : AndroidViewModel(application) 
         val completedItems = checklist.count { it.isChecked }
         return completedItems.toFloat() / checklist.size.toFloat()
     }
+
+    /**
+     * Configura un recordatorio para el compromiso
+     */
+    fun setReminder(commitmentId: Int, timeString: String) {
+        viewModelScope.launch {
+            try {
+                val commitment = commitmentRepository.getCommitmentById(commitmentId)
+                if (commitment != null) {
+                    // Actualizar la base de datos
+                    commitmentRepository.updateReminderTime(commitmentId, timeString)
+                    
+                    // Programar la notificación
+                    notificationScheduler.scheduleReminder(
+                        commitmentId = commitmentId,
+                        commitmentTitle = commitment.title,
+                        timeString = timeString
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message
+                )
+            }
+        }
+    }
+
+    /**
+     * Cancela el recordatorio del compromiso
+     */
+    fun cancelReminder(commitmentId: Int) {
+        viewModelScope.launch {
+            try {
+                // Actualizar la base de datos
+                commitmentRepository.updateReminderTime(commitmentId, null)
+                
+                // Cancelar la notificación
+                notificationScheduler.cancelReminder(commitmentId)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message
+                )
+            }
+        }
+    }
+
+    /**
+     * Verifica si la aplicación tiene permisos de notificación
+     */
+    fun hasNotificationPermission(): Boolean {
+        return notificationScheduler.hasNotificationPermission()
+    }
+
+    /**
+     * Función para probar notificaciones inmediatamente
+     */
+    fun testNotification(commitmentId: Int) {
+        viewModelScope.launch {
+            try {
+                val commitment = commitmentRepository.getCommitmentById(commitmentId)
+                if (commitment != null) {
+                    // Programar una notificación de prueba
+                    notificationScheduler.scheduleReminder(
+                        commitmentId = commitmentId,
+                        commitmentTitle = "PRUEBA: ${commitment.title}",
+                        timeString = "00:00" // No importa la hora para la prueba
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message
+                )
+            }
+        }
+    }
 }
 
 /**
@@ -99,5 +177,7 @@ data class DetailUiState(
     val commitmentWithChecklist: CommitmentWithChecklist? = null,
     val progress: Float = 0f,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val showTimePickerDialog: Boolean = false,
+    val showReminderDialog: Boolean = false
 )

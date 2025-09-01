@@ -18,7 +18,8 @@ data class Commitment(
     val title: String,
     val description: String,
     val category: CommitmentCategory,
-    val creationDate: LocalDateTime = LocalDateTime.now()
+    val creationDate: LocalDateTime = LocalDateTime.now(),
+    val reminderTime: String? = null // Hora del recordatorio en formato "HH:mm"
 )
 
 /**
