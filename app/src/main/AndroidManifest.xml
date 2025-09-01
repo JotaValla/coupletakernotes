@@ -51,6 +51,17 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+
+        <!-- Servicio para capturar notificaciones del sistema -->
+        <service
+            android:name=".service.NotificationCaptureService"
+            android:label="Capturador de Notificaciones - NoteCoupleTaker"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
         
     </application>
 

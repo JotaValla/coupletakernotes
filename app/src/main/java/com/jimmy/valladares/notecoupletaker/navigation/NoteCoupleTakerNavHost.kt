@@ -10,6 +10,8 @@ import com.jimmy.valladares.notecoupletaker.ui.addcommitment.AddCommitmentScreen
 import com.jimmy.valladares.notecoupletaker.ui.detail.CommitmentDetailScreen
 import com.jimmy.valladares.notecoupletaker.ui.home.HomeScreen
 import com.jimmy.valladares.notecoupletaker.ui.home.HomeViewModel
+import com.jimmy.valladares.notecoupletaker.ui.notifications.NotificationHistoryScreen
+import com.jimmy.valladares.notecoupletaker.ui.settings.SettingsScreen
 
 /**
  * NavHost principal que maneja la navegación entre pantallas
@@ -35,6 +37,9 @@ fun NoteCoupleTakerNavHost(
                 },
                 onCommitmentClick = { commitmentId ->
                     navController.navigate("${NoteCoupleTakerDestinations.COMMITMENT_DETAIL_ROUTE}/$commitmentId")
+                },
+                onSettingsClick = {
+                    navController.navigate(NoteCoupleTakerDestinations.SETTINGS_ROUTE)
                 }
             )
         }
@@ -60,6 +65,25 @@ fun NoteCoupleTakerNavHost(
                     }
                 )
             }
+        }
+        
+        composable(NoteCoupleTakerDestinations.SETTINGS_ROUTE) {
+            SettingsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToNotificationHistory = {
+                    navController.navigate(NoteCoupleTakerDestinations.NOTIFICATION_HISTORY_ROUTE)
+                }
+            )
+        }
+        
+        composable(NoteCoupleTakerDestinations.NOTIFICATION_HISTORY_ROUTE) {
+            NotificationHistoryScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

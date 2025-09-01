@@ -19,6 +19,7 @@
     <string name="cd_category_icon">Ícono de categoría</string>
     <string name="cd_commitment_card">Tarjeta de compromiso</string>
     <string name="cd_add_commitment">Agregar nuevo compromiso</string>
+    <string name="cd_settings_button">Configuración</string>
     <string name="cd_back_button">Botón de regreso</string>
     
     <!-- Add Commitment Screen -->
@@ -70,4 +71,31 @@
     <string name="notification_title">Recordatorio de tu compromiso</string>
     <string name="notification_channel_name">Recordatorios de Compromisos</string>
     <string name="notification_channel_description">Notificaciones para recordar compromisos de pareja</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_title">Configuración</string>
+    <string name="settings_notification_access_title">Acceso a Notificaciones</string>
+    <string name="settings_notification_access_description">Para guardar un historial de tus notificaciones, necesitamos que actives el acceso en los ajustes de tu dispositivo. Esto nos permitirá capturar todas las notificaciones que recibes.</string>
+    <string name="settings_current_status">Estado actual:</string>
+    <string name="settings_status_enabled">Activado</string>
+    <string name="settings_status_disabled">Desactivado</string>
+    <string name="settings_status_active">Activo</string>
+    <string name="settings_status_inactive">Inactivo</string>
+    <string name="settings_enable_permission">Activar Permiso</string>
+    <string name="settings_manage_permission">Gestionar Permiso</string>
+    <string name="settings_info_title">¿Cómo funciona?</string>
+    <string name="settings_info_description">Una vez activado, nuestro servicio capturará todas las notificaciones que lleguen a tu dispositivo. Esta información se guardará localmente y podrás revisarla en cualquier momento. Puedes desactivar este permiso cuando quieras desde la configuración de tu dispositivo.</string>
+    
+    <!-- Notification History Screen -->
+    <string name="notification_history_title">Historial de Notificaciones</string>
+    <string name="notification_history_count">%d notificaciones registradas</string>
+    <string name="notification_history_loading">Cargando historial de notificaciones...</string>
+    <string name="notification_history_empty_title">Sin notificaciones</string>
+    <string name="notification_history_empty_subtitle">Aún no se han capturado notificaciones. Asegúrate de que el permiso esté activado en la configuración.</string>
+    <string name="notification_history_error_title">Error al cargar</string>
+    <string name="notification_history_retry">Reintentar</string>
+    <string name="view_notification_history">Ver Historial</string>
+    <string name="cd_refresh_notifications">Actualizar notificaciones</string>
+    <string name="cd_notification_card">Tarjeta de notificación</string>
+    <string name="cd_app_icon">Ícono de aplicación</string>
 </resources>

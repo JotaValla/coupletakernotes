@@ -7,6 +7,8 @@ object NoteCoupleTakerDestinations {
     const val HOME_ROUTE = "home"
     const val ADD_COMMITMENT_ROUTE = "add_commitment"
     const val COMMITMENT_DETAIL_ROUTE = "commitment_detail"
+    const val SETTINGS_ROUTE = "settings"
+    const val NOTIFICATION_HISTORY_ROUTE = "notification_history"
     
     // Argumentos de navegación
     const val COMMITMENT_ID_ARG = "commitmentId"
