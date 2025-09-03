@@ -12,6 +12,7 @@ import com.jimmy.valladares.notecoupletaker.ui.home.HomeScreen
 import com.jimmy.valladares.notecoupletaker.ui.home.HomeViewModel
 import com.jimmy.valladares.notecoupletaker.ui.notifications.NotificationHistoryScreen
 import com.jimmy.valladares.notecoupletaker.ui.settings.SettingsScreen
+import com.jimmy.valladares.notecoupletaker.ui.setup.InitialSetupScreen
 
 /**
  * NavHost principal que maneja la navegación entre pantallas
@@ -19,6 +20,7 @@ import com.jimmy.valladares.notecoupletaker.ui.settings.SettingsScreen
 @Composable
 fun NoteCoupleTakerNavHost(
     navController: NavHostController,
+    startDestination: String,
     modifier: Modifier = Modifier
 ) {
     // ViewModel compartido entre pantallas para manejar el estado de los compromisos
@@ -26,9 +28,23 @@ fun NoteCoupleTakerNavHost(
     
     NavHost(
         navController = navController,
-        startDestination = NoteCoupleTakerDestinations.HOME_ROUTE,
+        startDestination = startDestination,
         modifier = modifier
     ) {
+        // Pantalla de configuración inicial
+        composable(NoteCoupleTakerDestinations.INITIAL_SETUP_ROUTE) {
+            InitialSetupScreen(
+                onSetupComplete = {
+                    // Una vez completada la configuración, navegar al home
+                    navController.navigate(NoteCoupleTakerDestinations.HOME_ROUTE) {
+                        // Limpiar la pila de navegación para que no se pueda regresar
+                        popUpTo(NoteCoupleTakerDestinations.INITIAL_SETUP_ROUTE) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
         composable(NoteCoupleTakerDestinations.HOME_ROUTE) {
             HomeScreen(
                 viewModel = homeViewModel,
