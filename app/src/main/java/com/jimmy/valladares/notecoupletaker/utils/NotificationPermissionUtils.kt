@@ -68,6 +68,9 @@ object NotificationPermissionUtils {
             try {
                 val intent = Intent(context, KeepAliveService::class.java)
                 context.startForegroundService(intent)
+                
+                // Programar el watchdog para monitorear el servicio
+                WatchdogReceiver.scheduleWatchdog(context)
             } catch (e: Exception) {
                 // En caso de error, no hacer nada crítico
                 // El servicio puede que ya esté corriendo
@@ -83,6 +86,9 @@ object NotificationPermissionUtils {
         try {
             val intent = Intent(context, KeepAliveService::class.java)
             context.stopService(intent)
+            
+            // Cancelar el watchdog ya que no necesitamos el servicio
+            WatchdogReceiver.cancelWatchdog(context)
         } catch (e: Exception) {
             // En caso de error, no hacer nada crítico
         }

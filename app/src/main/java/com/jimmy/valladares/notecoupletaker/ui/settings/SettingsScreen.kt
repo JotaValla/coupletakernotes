@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -54,6 +55,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.jimmy.valladares.notecoupletaker.R
 import com.jimmy.valladares.notecoupletaker.ui.theme.NoteCoupleTakerTheme
 import com.jimmy.valladares.notecoupletaker.utils.NotificationPermissionUtils
+import com.jimmy.valladares.notecoupletaker.utils.DeviceOptimizationUtils
 
 /**
  * Pantalla de configuración que permite al usuario gestionar los permisos de notificaciones
@@ -139,6 +141,11 @@ fun SettingsScreen(
 
             // Información adicional
             InfoCard()
+            
+            // Tarjeta de optimización de dispositivo (solo si es necesario)
+            if (DeviceOptimizationUtils.hasAggressiveBatteryOptimization()) {
+                DeviceOptimizationCard()
+            }
         }
     }
 }
@@ -384,6 +391,115 @@ private fun InfoCard() {
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 lineHeight = MaterialTheme.typography.bodySmall.lineHeight * 1.3f
             )
+        }
+    }
+}
+
+/**
+ * Tarjeta de optimización para dispositivos con administración agresiva de batería
+ */
+@Composable
+private fun DeviceOptimizationCard() {
+    val context = LocalContext.current
+    var showInstructions by remember { mutableStateOf(false) }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(24.dp)
+                )
+                
+                Spacer(modifier = Modifier.width(12.dp))
+                
+                Text(
+                    text = "${DeviceOptimizationUtils.getManufacturerName()} Detectado",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Text(
+                text = "Tu dispositivo puede terminar la aplicación en segundo plano. Para asegurar que funcione correctamente:",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = { showInstructions = !showInstructions },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Ver Guía")
+                }
+                
+                Button(
+                    onClick = { 
+                        DeviceOptimizationUtils.openBatteryOptimizationSettings(context)
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Configurar")
+                }
+            }
+            
+            if (showInstructions) {
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Instrucciones para ${DeviceOptimizationUtils.getManufacturerName()}:",
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        DeviceOptimizationUtils.getOptimizationInstructions().forEach { instruction ->
+                            Text(
+                                text = instruction,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                modifier = Modifier.padding(vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

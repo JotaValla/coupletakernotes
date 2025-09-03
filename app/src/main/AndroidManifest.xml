@@ -54,6 +54,12 @@
             </intent-filter>
         </receiver>
 
+        <!-- BroadcastReceiver para el watchdog que mantiene el servicio activo -->
+        <receiver
+            android:name=".utils.WatchdogReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
         <!-- Servicio para capturar notificaciones del sistema -->
         <service
             android:name=".service.NotificationCaptureService"
