@@ -29,8 +29,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -42,12 +40,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -63,8 +59,7 @@ import com.jimmy.valladares.notecoupletaker.utils.DeviceOptimizationUtils
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onNavigateBack: () -> Unit,
-    onNavigateToNotificationHistory: () -> Unit = {}
+    onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -135,12 +130,8 @@ fun SettingsScreen(
                 isEnabled = isNotificationAccessEnabled,
                 onOpenSettings = {
                     NotificationPermissionUtils.openNotificationListenerSettings(context)
-                },
-                onViewHistory = onNavigateToNotificationHistory
+                }
             )
-
-            // Información adicional
-            InfoCard()
             
             // Tarjeta de optimización de dispositivo (solo si es necesario)
             if (DeviceOptimizationUtils.hasAggressiveBatteryOptimization()) {
@@ -156,8 +147,7 @@ fun SettingsScreen(
 @Composable
 private fun NotificationPermissionCard(
     isEnabled: Boolean,
-    onOpenSettings: () -> Unit,
-    onViewHistory: () -> Unit
+    onOpenSettings: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -249,45 +239,17 @@ private fun NotificationPermissionCard(
 
             // Botón para abrir configuración
             if (isEnabled) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onOpenSettings,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.settings_manage_permission))
-                    }
-                    
-                    Button(
-                        onClick = onViewHistory,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.view_notification_history))
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                // Botón de diagnóstico
                 OutlinedButton(
-                    onClick = { /* TODO: Navigate to diagnostics */ },
+                    onClick = onOpenSettings,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("🔧 Diagnóstico del Sistema")
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.settings_manage_permission))
                 }
             } else {
                 Button(
@@ -353,43 +315,6 @@ private fun StatusIndicator(isEnabled: Boolean) {
                 } else {
                     MaterialTheme.colorScheme.onErrorContainer
                 }
-            )
-        }
-    }
-}
-
-/**
- * Tarjeta con información adicional sobre el servicio
- */
-@Composable
-private fun InfoCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.settings_info_title),
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = stringResource(R.string.settings_info_description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                lineHeight = MaterialTheme.typography.bodySmall.lineHeight * 1.3f
             )
         }
     }
@@ -512,8 +437,7 @@ private fun DeviceOptimizationCard() {
 private fun SettingsScreenPreview() {
     NoteCoupleTakerTheme {
         SettingsScreen(
-            onNavigateBack = {},
-            onNavigateToNotificationHistory = {}
+            onNavigateBack = {}
         )
     }
 }

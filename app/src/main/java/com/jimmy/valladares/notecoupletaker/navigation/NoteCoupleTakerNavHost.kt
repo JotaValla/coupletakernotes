@@ -71,9 +71,6 @@ fun NoteCoupleTakerNavHost(
             SettingsScreen(
                 onNavigateBack = {
                     navController.popBackStack()
-                },
-                onNavigateToNotificationHistory = {
-                    navController.navigate(NoteCoupleTakerDestinations.NOTIFICATION_HISTORY_ROUTE)
                 }
             )
         }
