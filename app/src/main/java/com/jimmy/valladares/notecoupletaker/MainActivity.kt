@@ -13,11 +13,16 @@ import androidx.navigation.compose.rememberNavController
 import com.jimmy.valladares.notecoupletaker.navigation.NoteCoupleTakerDestinations
 import com.jimmy.valladares.notecoupletaker.navigation.NoteCoupleTakerNavHost
 import com.jimmy.valladares.notecoupletaker.ui.theme.NoteCoupleTakerTheme
+import com.jimmy.valladares.notecoupletaker.utils.NotificationPermissionUtils
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // Iniciar el servicio KeepAlive si ya tenemos permisos de notificación
+        NotificationPermissionUtils.startKeepAliveServiceIfNeeded(this)
+        
         setContent {
             NoteCoupleTakerTheme {
                 Surface(

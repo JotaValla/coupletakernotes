@@ -19,6 +19,9 @@ class BootCompletedReceiver : BroadcastReceiver() {
             
             // Restaurar todas las alarmas de recordatorios
             restoreReminders(context)
+            
+            // Iniciar el servicio KeepAlive si tenemos permisos de notificación
+            NotificationPermissionUtils.startKeepAliveServiceIfNeeded(context)
         }
     }
     

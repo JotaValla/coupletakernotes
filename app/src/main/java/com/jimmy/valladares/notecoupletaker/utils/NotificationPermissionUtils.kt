@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.text.TextUtils
+import com.jimmy.valladares.notecoupletaker.service.KeepAliveService
 
 /**
  * Utilidades para gestionar los permisos de acceso a notificaciones
@@ -55,5 +56,35 @@ object NotificationPermissionUtils {
         // Esta verificación se basa en si el servicio tiene los permisos necesarios
         // En una implementación más avanzada, podríamos tener un mecanismo de heartbeat
         return isNotificationListenerEnabled(context)
+    }
+
+    /**
+     * Inicia el servicio en primer plano para mantener la aplicación activa
+     * cuando el acceso a notificaciones está habilitado
+     * @param context Contexto de la aplicación
+     */
+    fun startKeepAliveServiceIfNeeded(context: Context) {
+        if (isNotificationListenerEnabled(context)) {
+            try {
+                val intent = Intent(context, KeepAliveService::class.java)
+                context.startForegroundService(intent)
+            } catch (e: Exception) {
+                // En caso de error, no hacer nada crítico
+                // El servicio puede que ya esté corriendo
+            }
+        }
+    }
+
+    /**
+     * Detiene el servicio en primer plano cuando el acceso a notificaciones es deshabilitado
+     * @param context Contexto de la aplicación
+     */
+    fun stopKeepAliveService(context: Context) {
+        try {
+            val intent = Intent(context, KeepAliveService::class.java)
+            context.stopService(intent)
+        } catch (e: Exception) {
+            // En caso de error, no hacer nada crítico
+        }
     }
 }

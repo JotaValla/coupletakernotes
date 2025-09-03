@@ -74,7 +74,17 @@ fun SettingsScreen(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
+                val wasEnabled = isNotificationAccessEnabled
                 isNotificationAccessEnabled = NotificationPermissionUtils.isNotificationListenerEnabled(context)
+                
+                // Si el acceso fue habilitado, iniciar el servicio KeepAlive
+                if (!wasEnabled && isNotificationAccessEnabled) {
+                    NotificationPermissionUtils.startKeepAliveServiceIfNeeded(context)
+                }
+                // Si el acceso fue deshabilitado, detener el servicio KeepAlive
+                else if (wasEnabled && !isNotificationAccessEnabled) {
+                    NotificationPermissionUtils.stopKeepAliveService(context)
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
